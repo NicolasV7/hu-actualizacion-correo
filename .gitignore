@@ -1,0 +1,28 @@
+# Java / Maven
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/HELP.md
+*.class
+*.log
+
+# Node
+frontend/node_modules/
+frontend/test-results/
+frontend/playwright-report/
+npm-debug.log*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Entorno local
+.env
