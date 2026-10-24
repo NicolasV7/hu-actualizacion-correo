@@ -1,0 +1,36 @@
+# docker compose up --build                              -> demo en http://localhost:8080 (las pruebas del backend corren en la construcción)
+# docker compose --profile test run --rm frontend-tests   -> pruebas unitarias del frontend
+# docker compose --profile test run --rm e2e              -> flujo completo en WebKit (motor de Safari) y Chromium
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  frontend-tests:
+    image: node:20-alpine
+    working_dir: /work
+    volumes:
+      - ./frontend:/work
+    command: npm test
+    profiles: ["test"]
+
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.58.2-noble
+    working_dir: /work
+    volumes:
+      - ./frontend:/work
+    environment:
+      E2E_BASE_URL: http://app:8080
+    depends_on:
+      app:
+        condition: service_healthy
+    command: sh -c "npm ci && npm run test:e2e"
+    profiles: ["test"]
