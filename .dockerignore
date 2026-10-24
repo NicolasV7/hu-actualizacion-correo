@@ -1,0 +1,7 @@
+.git
+docs
+**/target
+**/node_modules
+**/test-results
+*.md
+.env

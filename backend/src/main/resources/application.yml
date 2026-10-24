@@ -1,0 +1,33 @@
+# Toda variable operativa se lee del ambiente con un valor por defecto (ver README, tabla de variables).
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: contact-update-service
+
+logging:
+  structured:
+    format:
+      console: ${LOG_FORMAT:ecs}
+
+app:
+  verification:
+    code-ttl: ${VERIFICATION_CODE_TTL:PT5M}
+    max-attempts: ${VERIFICATION_MAX_ATTEMPTS:3}
+    resend-cooldown: ${VERIFICATION_RESEND_COOLDOWN:PT60S}
+  integration:
+    mode: ${INTEGRATION_MODE:http}
+    connect-timeout: ${INTEGRATION_CONNECT_TIMEOUT:PT2S}
+    read-timeout: ${INTEGRATION_READ_TIMEOUT:PT5S}
+    customer-data:
+      base-url: ${CUSTOMER_DATA_BASE_URL:}
+      api-key: ${CUSTOMER_DATA_API_KEY:}
+    identity:
+      base-url: ${IDENTITY_BASE_URL:}
+      api-key: ${IDENTITY_API_KEY:}
+    messaging:
+      base-url: ${MESSAGING_BASE_URL:}
+      api-key: ${MESSAGING_API_KEY:}
+  stub:
+    verification-code: ${STUB_VERIFICATION_CODE:123456}

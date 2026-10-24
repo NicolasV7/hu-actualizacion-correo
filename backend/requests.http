@@ -1,0 +1,73 @@
+# Peticiones de ejemplo para la herramienta de prueba API (formato REST Client de VS Code / IntelliJ).
+# Requiere el backend en perfil local: ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+
+@baseUrl = http://localhost:8080/api/v1/contact/email-updates
+@affiliate = AFF-001
+
+### 1. Iniciar la actualización (201 con transactionId y destino enmascarado)
+POST {{baseUrl}}
+X-Affiliate-Id: {{affiliate}}
+X-Correlation-Id: manual-001
+Content-Type: application/json
+
+{ "newEmail": "nueva.direccion@example.com" }
+
+### 2. Confirmar con el código del stub (123456). Reemplaza {transactionId} por el valor del paso 1.
+POST {{baseUrl}}/{transactionId}/confirm
+X-Affiliate-Id: {{affiliate}}
+X-Correlation-Id: manual-001
+Content-Type: application/json
+
+{ "code": "123456" }
+
+### 3. Reenviar el código (429 antes de 60 s; 200 después)
+POST {{baseUrl}}/{transactionId}/resend
+X-Affiliate-Id: {{affiliate}}
+
+### 4. Código incorrecto (422 INVALID_CODE con intentos restantes)
+POST {{baseUrl}}/{transactionId}/confirm
+X-Affiliate-Id: {{affiliate}}
+Content-Type: application/json
+
+{ "code": "000000" }
+
+### 5. Sin cabecera de afiliado (401 UNAUTHENTICATED)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{ "newEmail": "nueva.direccion@example.com" }
+
+### 6. Correo inválido (400 VALIDATION_ERROR con errors[])
+POST {{baseUrl}}
+X-Affiliate-Id: {{affiliate}}
+Content-Type: application/json
+
+{ "newEmail": "no-es-un-correo" }
+
+### 7. Afiliado sin celular registrado (422 IDENTITY_CHANNEL_UNAVAILABLE)
+POST {{baseUrl}}
+X-Affiliate-Id: AFF-002
+Content-Type: application/json
+
+{ "newEmail": "nueva.direccion@example.com" }
+
+### 8. Proveedor de identidad con timeout (504 PROVIDER_TIMEOUT, Retry-After)
+POST {{baseUrl}}
+X-Affiliate-Id: AFF-IDP-TIMEOUT
+Content-Type: application/json
+
+{ "newEmail": "nueva.direccion@example.com" }
+
+### 9. Falla la actualización en Customer Data tras validar el código (503 y transacción FAILED)
+POST {{baseUrl}}
+X-Affiliate-Id: AFF-CDS-DOWN
+Content-Type: application/json
+
+{ "newEmail": "nueva.direccion@example.com" }
+
+### 10. Notificación no enviada (200 con notificationSent=false): usa un correo con dominio down.test
+POST {{baseUrl}}
+X-Affiliate-Id: AFF-004
+Content-Type: application/json
+
+{ "newEmail": "nueva.direccion@down.test" }

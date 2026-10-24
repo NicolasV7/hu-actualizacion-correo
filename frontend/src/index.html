@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi Perfil - Actualizar correo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="demo">
+    <header class="demo-header">
+      <p class="demo-breadcrumb">Portal de afiliados - Mi Perfil - Actualización de datos</p>
+      <p class="demo-note">Demo local con datos sintéticos (ver README). Código de verificación válido: <code>123456</code>.</p>
+      <label class="demo-select">Afiliado de prueba
+        <select id="affiliate">
+          <option value="AFF-001" data-email="ana.perez@example.com">AFF-001 - activo, con celular (flujo feliz)</option>
+          <option value="AFF-002" data-email="luis.gomez@example.com">AFF-002 - sin celular registrado</option>
+          <option value="AFF-003" data-email="maria.ruiz@example.com">AFF-003 - afiliado inactivo</option>
+          <option value="AFF-004" data-email="">AFF-004 - sin correo previo</option>
+          <option value="AFF-IDP-TIMEOUT" data-email="timeout@example.com">AFF-IDP-TIMEOUT - proveedor de identidad lento</option>
+          <option value="AFF-IDP-DOWN" data-email="down@example.com">AFF-IDP-DOWN - proveedor de identidad caído</option>
+          <option value="AFF-CDS-DOWN" data-email="cds@example.com">AFF-CDS-DOWN - falla la actualización</option>
+        </select>
+      </label>
+    </header>
+
+    <email-update id="component" api-base="/api/v1" affiliate-id="AFF-001" current-email="ana.perez@example.com"></email-update>
+
+    <section class="demo-log" aria-labelledby="demo-log-title">
+      <h2 id="demo-log-title">Eventos del componente</h2>
+      <ul id="events"></ul>
+    </section>
+  </main>
+
+  <script type="module">
+    import './email-update.js';
+
+    const select = document.getElementById('affiliate');
+    const component = document.getElementById('component');
+    const events = document.getElementById('events');
+
+    function log(kind, detail) {
+      const item = document.createElement('li');
+      item.textContent = `${new Date().toLocaleTimeString()} ${kind} ${JSON.stringify(detail)}`;
+      events.prepend(item);
+    }
+
+    select.addEventListener('change', () => {
+      component.setAttribute('current-email', select.selectedOptions[0].dataset.email || '');
+      component.setAttribute('affiliate-id', select.value);
+    });
+    document.addEventListener('email-update:completed', (event) => log('email-update:completed', event.detail));
+    // Observabilidad por navegador (doc 11): cualquier promesa rechazada sin manejar queda visible en la demo.
+    window.addEventListener('unhandledrejection', (event) => log('unhandledrejection', { reason: String(event.reason) }));
+    window.addEventListener('error', (event) => log('error', { message: event.message }));
+  </script>
+</body>
+</html>

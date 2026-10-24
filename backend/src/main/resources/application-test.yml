@@ -1,0 +1,11 @@
+# Perfil test: stubs con datos sintéticos y logs en texto plano para leer la salida de las pruebas.
+app:
+  integration:
+    mode: stub
+
+logging:
+  structured:
+    format:
+      console:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{correlationId}] %logger{30} - %msg%n"
