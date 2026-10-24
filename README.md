@@ -116,7 +116,11 @@ docs/      E1 a E7 y evidencias
 
 ## Historial y PR
 
-Integración a `main` mediante un pull request por rama; los enlaces se listan al cierre.
+| PR | Rama | Contenido |
+|---|---|---|
+| [#1](https://github.com/NicolasV7/hu-actualizacion-correo/pull/1) | `feature/HU-001-actualizar-correo` | Microservicio, componente web, E1 a E4, README |
+| [#2](https://github.com/NicolasV7/hu-actualizacion-correo/pull/2) | `fix/INC-safari-confirmacion` | Fix del incidente Safari con regresión, E5 y E6 |
+| [#3](https://github.com/NicolasV7/hu-actualizacion-correo/pull/3) | `docs/cierre-entregables` | E7 y cierre del README |
 
 ## Uso de IA
 
