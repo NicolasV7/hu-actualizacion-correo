@@ -1,0 +1,13 @@
+{
+  "name": "email-update-component",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Componente web nativo <email-update> para la actualización de correo del afiliado",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
