@@ -2,11 +2,16 @@
 // Sin framework ni dependencias; se integra en el portal cargando este módulo y colocando la etiqueta.
 
 import { createApiClient } from './api-client.js';
+import { deferNonCritical } from './compat.js';
 import { formatCountdown, formatDateTime, secondsLeft } from './dates.js';
 import { VIEWS, initialState, isTerminalError, transition } from './state.js';
 import { normalizeEmail, validateCode, validateEmail } from './validation.js';
 
 const TICK_MS = 1000;
+const UNEXPECTED_ERROR = Object.freeze({
+  code: 'UNEXPECTED_ERROR',
+  message: 'Ocurrió un error inesperado. Intenta de nuevo.',
+});
 
 export class EmailUpdateElement extends HTMLElement {
   static observedAttributes = ['api-base', 'affiliate-id', 'current-email'];
@@ -61,20 +66,30 @@ export class EmailUpdateElement extends HTMLElement {
     const form = event.target;
     const data = new FormData(form);
     if (form.dataset.action === 'start') {
-      this.#start(data.get('newEmail'));
+      this.#run('START_FAILED', () => this.#start(data.get('newEmail')));
     } else if (form.dataset.action === 'confirm') {
-      this.#confirm(data.get('code'));
+      this.#run('CONFIRM_FAILED', () => this.#confirm(data.get('code')));
     }
   };
 
   #onClick = (event) => {
     const action = event.target.closest('[data-action]')?.dataset.action;
     if (action === 'resend') {
-      this.#resend();
+      this.#run('RESEND_FAILED', () => this.#resend());
     } else if (action === 'restart') {
       this.reset();
     }
   };
+
+  /** Red de seguridad: un error inesperado nunca deja la interfaz bloqueada ni una promesa sin manejar. */
+  async #run(failureType, action) {
+    try {
+      await action();
+    } catch (error) {
+      console.error('[email-update] error inesperado', error);
+      this.#dispatch({ type: failureType, error: UNEXPECTED_ERROR });
+    }
+  }
 
   async #start(value) {
     const message = validateEmail(value, this.getAttribute('current-email'));
@@ -100,19 +115,17 @@ export class EmailUpdateElement extends HTMLElement {
       return;
     }
     this.#dispatch({ type: 'CONFIRM_REQUESTED' });
-    const result = await this.#api
-      .confirm(this.#state.transaction.transactionId, String(value).trim())
-      .catch((error) => {
-        this.#dispatch({ type: 'CONFIRM_FAILED', error });
-        return null;
-      });
-    if (!result) {
+    let result;
+    try {
+      result = await this.#api.confirm(this.#state.transaction.transactionId, String(value).trim());
+    } catch (error) {
+      this.#dispatch({ type: 'CONFIRM_FAILED', error });
       return;
     }
-    // Indicador de éxito del flujo para el portal (doc 11), fuera del camino crítico del render.
-    requestIdleCallback(() => this.#emitCompleted(result));
+    // Primero el afiliado ve su resultado; la telemetría para el portal (doc 11) va después y nunca lo bloquea.
     this.#stopTimer();
     this.#dispatch({ type: 'CONFIRM_SUCCEEDED', result });
+    deferNonCritical(() => this.#emitCompleted(result));
   }
 
   async #resend() {
@@ -227,7 +240,7 @@ export class EmailUpdateElement extends HTMLElement {
     return `
       <div class="eu-done" role="status" aria-live="polite">
         <p class="eu-success">Tu correo fue actualizado a <strong>${escapeHtml(result.maskedEmail)}</strong>
-           el ${escapeHtml(formatDateTime(result.updatedAt))}.</p>
+           el ${escapeHtml(formatDateTime(result.updatedAt))}</p>
         <p>${notice}</p>
         <button type="button" class="eu-secondary" data-action="restart">Volver</button>
       </div>`;

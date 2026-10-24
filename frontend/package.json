@@ -5,9 +5,13 @@
   "description": "Componente web nativo <email-update> para la actualización de correo del afiliado",
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "test:e2e": "node --test e2e/safari-confirm.e2e.mjs"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "playwright": "1.58.2"
   }
 }
