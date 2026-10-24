@@ -1,0 +1,16 @@
+# Perfil local: adaptadores stub con datos sintéticos, logs legibles y el frontend servido desde ../frontend/src.
+app:
+  integration:
+    mode: stub
+
+logging:
+  structured:
+    format:
+      console:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{correlationId}] [%X{browser}] %logger{30} - %msg%n"
+
+spring:
+  web:
+    resources:
+      static-locations: file:${FRONTEND_DIR:../frontend/src}/
